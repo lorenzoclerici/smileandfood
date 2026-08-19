@@ -3,7 +3,6 @@
 
   var formSection = document.getElementById("contatto");
   var leadForm = document.getElementById("lead-form");
-  var formSuccess = document.getElementById("form-success");
   var experienceSelect = document.getElementById("esperienza");
 
   function scrollToForm(preselect) {
@@ -26,21 +25,18 @@
     leadForm.addEventListener("submit", function (e) {
       e.preventDefault();
 
+      if (!leadForm.checkValidity()) {
+        leadForm.reportValidity();
+        return;
+      }
+
       var privacy = document.getElementById("privacy");
       if (privacy && !privacy.checked) {
         privacy.focus();
         return;
       }
 
-      var card = leadForm.closest(".form-card");
-      if (card) {
-        card.classList.add("is-submitted");
-      }
-      if (formSuccess) {
-        formSuccess.classList.add("is-visible");
-        formSuccess.setAttribute("tabindex", "-1");
-        formSuccess.focus();
-      }
+      window.location.href = "thank-you.html";
     });
   }
 
