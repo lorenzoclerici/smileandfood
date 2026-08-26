@@ -1,9 +1,19 @@
 (function () {
   "use strict";
 
+  // Paste here the Web App URL from Google Apps Script (Deploy → New deployment)
+  var GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWZzhAs-MzOV4UXXGHHvr2dW_E229PA4Iod6nyflyDuYiQce9hGom6RziGuitCIm4Z/exec";
+
   var formSection = document.getElementById("contatto");
   var leadForm = document.getElementById("lead-form");
   var experienceSelect = document.getElementById("esperienza");
+
+  var experienceLabels = {
+    "cooking-class": "Cooking Class",
+    "foodtour": "Food Tour",
+    "private-chef": "Private Chef",
+    "non-so": "Not sure yet — help me choose"
+  };
 
   function scrollToForm(preselect) {
     if (preselect && experienceSelect) {
@@ -36,7 +46,41 @@
         return;
       }
 
-      window.location.href = "/thank-you";
+      if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.indexOf("PASTE_YOUR_") === 0) {
+        console.error("Google Script URL missing. Set GOOGLE_SCRIPT_URL in js/main.js");
+        window.location.href = "/thank-you";
+        return;
+      }
+
+      var submitBtn = leadForm.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Sending…";
+      }
+
+      var formData = new FormData(leadForm);
+      var esperienzaValue = formData.get("esperienza") || "";
+      formData.set(
+        "esperienza",
+        experienceLabels[esperienzaValue] || esperienzaValue
+      );
+      formData.delete("privacy");
+
+      fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        body: formData,
+        mode: "no-cors"
+      })
+        .then(function () {
+          window.location.href = "/thank-you";
+        })
+        .catch(function () {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Send request →";
+          }
+          alert("Something went wrong while sending the form. Please try again or contact us directly.");
+        });
     });
   }
 
